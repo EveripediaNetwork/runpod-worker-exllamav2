@@ -15,9 +15,13 @@ def download_model():
     if HUGGING_FACE_HUB_TOKEN:
         download_kwargs["token"] = HUGGING_FACE_HUB_TOKEN
 
+    DOWNLOAD_PATH = f"{MODEL_BASE_PATH}{MODEL_NAME.split('/')[1]}"
+
+    print(f"Downloading model to {DOWNLOAD_PATH}")
+
     snapshot_download(
         MODEL_NAME,
         revision=MODEL_REVISION,
-        local_dir=f"{MODEL_BASE_PATH}{MODEL_NAME.split('/')[1]}",
+        local_dir=DOWNLOAD_PATH,
         **download_kwargs,
     )
