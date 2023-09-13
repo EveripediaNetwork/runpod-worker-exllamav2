@@ -43,6 +43,7 @@ class Predictor:
         )  # create generator
         # Configure generator
         # self.generator.disallow_tokens([self.tokenizer.eos_token_id])
+
         self.inference_settings = InferenceSettings()
 
         self.generator.settings.token_repetition_penalty_max = (
