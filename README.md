@@ -1,48 +1,31 @@
-<div align="center">
+# ExllamaV2 Worker on Runpod Serverless
 
-<h1>Template | Worker</h1>
+This is worker code which uses ExllamaV2 for inference on Runpod Serverless.
 
-[![CI | Test Worker](https://github.com/runpod-workers/worker-template/actions/workflows/CI-test_worker.yml/badge.svg)](https://github.com/runpod-workers/worker-template/actions/workflows/CI-test_worker.yml)
-&nbsp;
-[![Docker Image](https://github.com/runpod-workers/worker-template/actions/workflows/CD-docker_dev.yml/badge.svg)](https://github.com/runpod-workers/worker-template/actions/workflows/CD-docker_dev.yml)
+## 🌟 How to use
+1. Clone this repository
+1. build docker image
+1. push docker image to your docker registry
+1. deploy to Runpod Serverless
 
-🚀 | A simple worker that can be used as a starting point to build your own custom RunPod Endpoint API worker.
-</div>
+### 🏗️ build docker image
+```bash
+docker build -t <your docker registry>/<your docker image name>:<your docker image tag> . --build-arg HUGGING_FACE_HUB_TOKEN=<your huggingface token> --build-arg MODEL_NAME=<your model name> --build-arg MODEL_REVISION=<your model revision> --build-arg MODEL_BASE_PATH=<your model base path>
+```
 
-## 📖 | Getting Started
+These are the build arguments:
 
-1. Clone this repository.
-2. (Optional) Add DockerHub credentials to GitHub Secrets.
-3. Add your code to the `src` directory.
-4. Update the `handler.py` file to load models and process requests.
-5. Add any dependencies to the `requirements.txt` file.
-6. Add any other build time scripts to the`builder` directory, for example, downloading models.
-7. Update the `Dockerfile` to include any additional dependencies.
+| key | value | optional |
+| --- | --- | --- |
+| HUGGING_FACE_HUB_TOKEN | your huggingface token | true |
+| MODEL_NAME | your model name | false |
+| MODEL_REVISION | your model revision | true |
+| MODEL_BASE_PATH | your model base path | true |
 
-### CI/CD
+### ⏫ push docker image to your docker registry
+```bash
+docker push <your docker registry>/<your docker image name>:<your docker image tag>
+```
 
-This repository is setup to automatically build and push a docker image to the GitHub Container Registry. You will need to add the following to the GitHub Secrets for this repository to enable this functionality:
-
-- `DOCKERHUB_USERNAME` | Your DockerHub username for logging in.
-- `DOCKERHUB_TOKEN` | Your DockerHub token for logging in.
-
-Additionally, the following need to be added as GitHub actions variables:
-
-- `DOCKERHUB_REPO` | The name of the repository you want to push to.
-- `DOCKERHUB_IMG` | The name of the image you want to push to.
-
-The `CD-docker_dev.yml` file will build the image and push it to the `dev` tag, while the `CD-docker_release.yml` file will build the image on releases and tag it with the release version.
-
-The `CI-test_worker.yml` file will test the worker using the input provided by the `--test_input` argument when calling the file containing your handler. Be sure to update this workflow to install any dependencies you need to run your tests.
-
-## 💡 | Best Practices
-
-System dependency installation, model caching, and other shell tasks should be added to the `builder/setup.sh` this will allow you to easily setup your Dockerfile as well as run CI/CD tasks.
-
-Models should be part of your docker image, this can be accomplished by either copying them into the image or downloading them during the build process.
-
-If using the input validation utility from the runpod python package, create a `schemas` python file where you can define the schemas, then import that file into your `handler.py` file.
-
-## 🔗 | Links
-
-🐳 [Docker Container](https://hub.docker.com/r/runpod/serverless-hello-world)
+### 🚀 deploy to Runpod Serverless
+After having docker image on your docker registry, you can deploy to Runpod Serverless.

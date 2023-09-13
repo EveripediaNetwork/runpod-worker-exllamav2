@@ -9,6 +9,19 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Set the working directory
 WORKDIR /
 
+
+# Prepare the models inside the docker image
+ARG HUGGING_FACE_HUB_TOKEN=
+ENV HUGGING_FACE_HUB_TOKEN=$HUGGING_FACE_HUB_TOKEN
+
+# Prepare argument for the model and tokenizer
+ARG MODEL_NAME=""
+ENV MODEL_NAME=$MODEL_NAME
+ARG MODEL_REVISION="main"
+ENV MODEL_REVISION=$MODEL_REVISION
+ARG MODEL_BASE_PATH="/runpod-volume/"
+ENV MODEL_BASE_PATH=$MODEL_BASE_PATH
+
 # Update and upgrade the system packages (Worker Template)
 COPY builder/setup.sh /setup.sh
 RUN /bin/bash /setup.sh && \
