@@ -2,7 +2,7 @@ import torch
 import logging, os, glob
 from exllamav2.model import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config
 from exllamav2.tokenizer import ExLlamaV2Tokenizer
-from exllamav2.generator import ExLlamaV2BaseGenerator
+from exllamav2.generator import ExLlamaV2BaseGenerator, ExLlamaV2Sampler
 from schema import InferenceSettings
 from download_model import download_model
 
@@ -28,7 +28,7 @@ class Predictor:
                     os.system(f"rm -rf {model_directory}")
                 raise e
 
-        config = ExLlamaV2Config()  # create config from config.json
+        config = ExLlamaV2Config()
         config.model_dir = model_directory
         config.prepare()
 
@@ -36,60 +36,31 @@ class Predictor:
         print("Loading model, tokenizer and cache...")
         self.tokenizer = ExLlamaV2Tokenizer(config)
         self.model = ExLlamaV2(config)
+        self.model.load()
         self.cache = ExLlamaV2Cache(self.model)
-
         self.generator = ExLlamaV2BaseGenerator(self.model, self.cache, self.tokenizer)
+
+        self.settings = ExLlamaV2Sampler.Settings()
         self.inference_settings = InferenceSettings()
 
-        self.generator.settings.token_repetition_penalty_max = (
+        self.settings.token_repetition_penalty_max = (
             self.inference_settings.token_repetition_penalty
         )
-        self.generator.settings.temperature = self.inference_settings.temperature
-        self.generator.settings.top_p = self.inference_settings.top_p
-        self.generator.settings.typical = self.inference_settings.typical_p
-        self.generator.settings.top_k = self.inference_settings.top_k
-        self.generator.settings.beams = self.inference_settings.num_beams
-        self.generator.settings.beam_length = self.inference_settings.length_penalty
+        self.settings.temperature = self.inference_settings.temperature
+        self.settings.top_p = self.inference_settings.top_p
+        self.settings.typical = self.inference_settings.typical_p
+        self.settings.top_k = self.inference_settings.top_k
+        self.settings.beams = self.inference_settings.num_beams
+        self.settings.beam_length = self.inference_settings.length_penalty
 
     def predict(self, settings):
         return self.generate_to_eos(settings)
 
     def generate_to_eos(self, settings):
-        self.generator.end_beam_search()
-
-        # Update generator settings
-        self.inference_settings = InferenceSettings(**settings)
-
-        self.generator.settings.token_repetition_penalty_max = (
-            self.inference_settings.token_repetition_penalty
+        print(settings)
+        self.generator.warmup()
+        max_new_tokens = 1000
+        output = self.generator.generate_simple(
+            settings["prompt"], self.settings, max_new_tokens, seed=1234
         )
-        self.generator.settings.temperature = self.inference_settings.temperature
-        self.generator.settings.top_p = self.inference_settings.top_p
-        self.generator.settings.typical = self.inference_settings.typical_p
-        self.generator.settings.top_k = self.inference_settings.top_k
-        self.generator.settings.beams = self.inference_settings.num_beams
-        self.generator.settings.beam_length = self.inference_settings.length_penalty
-
-        ids = self.tokenizer.encode(self.inference_settings.prompt)
-        num_res_tokens = ids.shape[-1]  # Decode from here
-        self.generator.gen_begin(ids)
-
-        text = ""
-        new_text = ""
-
-        self.generator.begin_beam_search()
-        for i in range(self.inference_settings.max_new_tokens):
-            gen_token = self.generator.beam_search()
-            if gen_token.item() == self.tokenizer.eos_token_id:
-                return new_text
-
-            num_res_tokens += 1
-            text = self.tokenizer.decode(
-                self.generator.sequence_actual[:, -num_res_tokens:][0]
-            )
-            new_text = text[len(self.inference_settings.prompt) :]
-            for sequence in self.inference_settings.reverse_prompt:
-                if new_text.lower().endswith(sequence.lower()):
-                    return new_text[: -len(sequence)]
-
-        return new_text
+        return output
