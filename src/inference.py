@@ -28,35 +28,17 @@ class Predictor:
                     os.system(f"rm -rf {model_directory}")
                 raise e
 
-        tokenizer_path = os.path.join(model_directory, "tokenizer.model")
-        model_config_path = os.path.join(model_directory, "config.json")
-        st_pattern = os.path.join(model_directory, "*.safetensors")
-        model_path = glob.glob(st_pattern)[0]
-
-        config = ExLlamaV2Config(model_config_path)  # create config from config.json
-        config.model_path = model_path  # supply path to model weights file
+        config = ExLlamaV2Config()  # create config from config.json
+        config.model_dir = model_directory
+        config.prepare()
 
         """Load the model into memory to make running multiple predictions efficient"""
-        print("Loading tokenizer...")
+        print("Loading model, tokenizer and cache...")
+        self.tokenizer = ExLlamaV2Tokenizer(config)
+        self.model = ExLlamaV2(config)
+        self.cache = ExLlamaV2Cache(self.model)
 
-        self.tokenizer = ExLlamaV2Tokenizer(
-            tokenizer_path
-        )  # create tokenizer from tokenizer model file
-
-        print("Loading model...")
-
-        self.model = ExLlamaV2(config)  # create ExLlamaV2 instance and load the weights
-
-        print("Creating cache...")
-        self.cache = ExLlamaV2Cache(self.model)  # create cache for inference
-
-        print("Creating generator...")
-        self.generator = ExLlamaV2BaseGenerator(
-            model=self.model, tokenizer=self.tokenizer, cache=self.cache
-        )  # create generator
-        # Configure generator
-        # self.generator.disallow_tokens([self.tokenizer.eos_token_id])
-
+        self.generator = ExLlamaV2BaseGenerator(self.model, self.cache, self.tokenizer)
         self.inference_settings = InferenceSettings()
 
         self.generator.settings.token_repetition_penalty_max = (
