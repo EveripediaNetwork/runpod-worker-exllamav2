@@ -1,7 +1,5 @@
 # Base image
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
-
-ENV DEBIAN_FRONTEND=noninteractive
+FROM runpod/pytorch:3.10-2.0.0-117
 
 # Use bash shell with pipefail option
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
