@@ -23,4 +23,7 @@ RUN python3 -m pip install --upgrade pip && \
 # Add src files (Worker Template)
 ADD src .
 
+# Run the Python script to download the model
+RUN python -u /download_model.py
+
 CMD python3 -u /handler.py

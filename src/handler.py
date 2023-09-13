@@ -1,21 +1,36 @@
 #!/usr/bin/env python
-''' Contains the handler function that will be called by the serverless. '''
+""" Contains the handler function that will be called by the serverless. """
+
+import os
+import inference
 
 import runpod
+from runpod.serverless.utils.rp_validator import validate
 
-# Load models into VRAM here so they can be warm between requests
+from schema import INPUT_SCHEMA
 
-
-def handler(event):
-    '''
-    This is the handler function that will be called by the serverless.
-    '''
-    print(event)
-
-    # do the things
-
-    # return the output that you want to be returned like pre-signed URLs to output artifacts
-    return "Hello World"
+MODEL = inference.Predictor()
+MODEL.setup()
 
 
-runpod.serverless.start({"handler": handler})
+def run(job):
+    """
+    Run inference on the model.
+    """
+    job_input = job["input"]
+
+    # Input validation
+    validated_input = validate(job_input, INPUT_SCHEMA)
+
+    if "errors" in validated_input:
+        return {"error": validated_input["errors"]}
+    validated_input = validated_input["validated_input"]
+
+    result = MODEL.predict(settings=validated_input)
+
+    job_output = {"result": {"prompt": validated_input["prompt"], "completion": result}}
+
+    return job_output
+
+
+runpod.serverless.start({"handler": run})
