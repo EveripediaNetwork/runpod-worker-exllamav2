@@ -2,7 +2,7 @@ import torch
 import logging, os, glob
 from exllamav2.model import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config
 from exllamav2.tokenizer import ExLlamaV2Tokenizer
-from exllamav2.generator import ExLlamaV2Generator
+from exllamav2.generator import ExLlamaV2BaseGenerator
 from schema import InferenceSettings
 from download_model import download_model
 
@@ -44,8 +44,8 @@ class Predictor:
         self.cache = ExLlamaV2Cache(self.model)  # create cache for inference
 
         print("Creating generator...")
-        self.generator = ExLlamaV2Generator(
-            self.model, self.tokenizer, self.cache
+        self.generator = ExLlamaV2BaseGenerator(
+            model=self.model, tokenizer=self.tokenizer, cache=self.cache
         )  # create generator
         # Configure generator
         # self.generator.disallow_tokens([self.tokenizer.eos_token_id])
