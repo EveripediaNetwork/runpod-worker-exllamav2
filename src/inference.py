@@ -1,8 +1,8 @@
 import torch
 import logging, os, glob
-from exllama.model import ExLlama, ExLlamaCache, ExLlamaConfig
-from exllama.tokenizer import ExLlamaTokenizer
-from exllama.generator import ExLlamaGenerator
+from exllamav2.model import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config
+from exllamav2.tokenizer import ExLlamaV2Tokenizer
+from exllamav2.generator import ExLlamaV2Generator
 from schema import InferenceSettings
 
 MODEL_NAME = os.environ.get("MODEL_NAME")
@@ -20,25 +20,25 @@ class Predictor:
         st_pattern = os.path.join(model_directory, "*.safetensors")
         model_path = glob.glob(st_pattern)[0]
 
-        config = ExLlamaConfig(model_config_path)  # create config from config.json
+        config = ExLlamaV2Config(model_config_path)  # create config from config.json
         config.model_path = model_path  # supply path to model weights file
 
         """Load the model into memory to make running multiple predictions efficient"""
         print("Loading tokenizer...")
 
-        self.tokenizer = ExLlamaTokenizer(
+        self.tokenizer = ExLlamaV2Tokenizer(
             tokenizer_path
         )  # create tokenizer from tokenizer model file
 
         print("Loading model...")
 
-        self.model = ExLlama(config)  # create ExLlama instance and load the weights
+        self.model = ExLlamaV2(config)  # create ExLlamaV2 instance and load the weights
 
         print("Creating cache...")
-        self.cache = ExLlamaCache(self.model)  # create cache for inference
+        self.cache = ExLlamaV2Cache(self.model)  # create cache for inference
 
         print("Creating generator...")
-        self.generator = ExLlamaGenerator(
+        self.generator = ExLlamaV2Generator(
             self.model, self.tokenizer, self.cache
         )  # create generator
         # Configure generator
