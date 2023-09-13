@@ -25,7 +25,7 @@ class Predictor:
                 print(f"Error downloading model: {e}")
                 # delete model directory if it exists
                 if os.path.isdir(model_directory):
-                    os.rmdir(model_directory)
+                    os.system(f"rm -rf {model_directory}")
                 raise e
 
         tokenizer_path = os.path.join(model_directory, "tokenizer.model")
