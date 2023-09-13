@@ -4,6 +4,7 @@ from exllamav2.model import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config
 from exllamav2.tokenizer import ExLlamaV2Tokenizer
 from exllamav2.generator import ExLlamaV2Generator
 from schema import InferenceSettings
+from download_model import download_model
 
 MODEL_NAME = os.environ.get("MODEL_NAME")
 MODEL_REVISION = os.environ.get("MODEL_REVISION", "main")
@@ -14,6 +15,11 @@ class Predictor:
     def setup(self):
         # Model moved to network storage
         model_directory = f"{MODEL_BASE_PATH}{MODEL_NAME.split('/')[1]}"
+
+        # check if model directory exists. else, download model
+        if not os.path.isdir(model_directory):
+            print("Downloading model...")
+            download_model()
 
         tokenizer_path = os.path.join(model_directory, "tokenizer.model")
         model_config_path = os.path.join(model_directory, "config.json")
