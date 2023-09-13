@@ -19,7 +19,14 @@ class Predictor:
         # check if model directory exists. else, download model
         if not os.path.isdir(model_directory):
             print("Downloading model...")
-            download_model()
+            try:
+                download_model()
+            except Exception as e:
+                print(f"Error downloading model: {e}")
+                # delete model directory if it exists
+                if os.path.isdir(model_directory):
+                    os.rmdir(model_directory)
+                raise e
 
         tokenizer_path = os.path.join(model_directory, "tokenizer.model")
         model_config_path = os.path.join(model_directory, "config.json")
