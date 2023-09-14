@@ -3,7 +3,6 @@ import logging, os, glob
 from exllamav2.model import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config
 from exllamav2.tokenizer import ExLlamaV2Tokenizer
 from exllamav2.generator import ExLlamaV2BaseGenerator, ExLlamaV2Sampler
-from schema import InferenceSettings
 from download_model import download_model
 
 MODEL_NAME = os.environ.get("MODEL_NAME")
@@ -39,28 +38,27 @@ class Predictor:
         self.model.load()
         self.cache = ExLlamaV2Cache(self.model)
         self.generator = ExLlamaV2BaseGenerator(self.model, self.cache, self.tokenizer)
-
         self.settings = ExLlamaV2Sampler.Settings()
-        self.inference_settings = InferenceSettings()
-
-        self.settings.token_repetition_penalty_max = (
-            self.inference_settings.token_repetition_penalty
-        )
-        self.settings.temperature = self.inference_settings.temperature
-        self.settings.top_p = self.inference_settings.top_p
-        self.settings.typical = self.inference_settings.typical_p
-        self.settings.top_k = self.inference_settings.top_k
-        self.settings.beams = self.inference_settings.num_beams
-        self.settings.beam_length = self.inference_settings.length_penalty
 
     def predict(self, settings):
-        return self.generate_to_eos(settings)
+        return self.simpleGenerate(settings)
 
-    def generate_to_eos(self, settings):
-        print(settings)
+    def simpleGenerate(self, settings):
         self.generator.warmup()
-        max_new_tokens = 1000
+
+        ### Set the generation settings
+        self.settings.temperature = settings["temperature"]
+        self.settings.top_p = settings["top_p"]
+        self.settings.top_k = settings["top_k"]
+        self.settings.token_repetition_penalty = settings["token_repetition_penalty"]
+        self.settings.token_repetition_range = settings["token_repetition_range"]
+        self.settings.token_repetition_decay = settings["token_repetition_decay"]
+
+        ###Generate the output
         output = self.generator.generate_simple(
-            settings["prompt"], self.settings, max_new_tokens, seed=1234
+            prompt=settings["prompt"],
+            gen_settings=self.settings,
+            num_tokens=settings["max_new_tokens"],
+            seed=1234,
         )
         return output
