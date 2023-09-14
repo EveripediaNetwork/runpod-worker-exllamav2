@@ -1,9 +1,13 @@
-import torch
-import logging, os, glob
+import os
 from exllamav2.model import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config
 from exllamav2.tokenizer import ExLlamaV2Tokenizer
-from exllamav2.generator import ExLlamaV2BaseGenerator, ExLlamaV2Sampler
+from exllamav2.generator import (
+    ExLlamaV2BaseGenerator,
+    ExLlamaV2Sampler,
+    ExLlamaV2StreamingGenerator,
+)
 from download_model import download_model
+import time
 
 MODEL_NAME = os.environ.get("MODEL_NAME")
 MODEL_REVISION = os.environ.get("MODEL_REVISION", "main")
@@ -31,21 +35,13 @@ class Predictor:
         config.model_dir = model_directory
         config.prepare()
 
-        """Load the model into memory to make running multiple predictions efficient"""
-        print("Loading model, tokenizer and cache...")
         self.tokenizer = ExLlamaV2Tokenizer(config)
         self.model = ExLlamaV2(config)
         self.model.load()
         self.cache = ExLlamaV2Cache(self.model)
-        self.generator = ExLlamaV2BaseGenerator(self.model, self.cache, self.tokenizer)
         self.settings = ExLlamaV2Sampler.Settings()
 
     def predict(self, settings):
-        return self.simpleGenerate(settings)
-
-    def simpleGenerate(self, settings):
-        self.generator.warmup()
-
         ### Set the generation settings
         self.settings.temperature = settings["temperature"]
         self.settings.top_p = settings["top_p"]
@@ -54,11 +50,41 @@ class Predictor:
         self.settings.token_repetition_range = settings["token_repetition_range"]
         self.settings.token_repetition_decay = settings["token_repetition_decay"]
 
-        ###Generate the output
-        output = self.generator.generate_simple(
-            prompt=settings["prompt"],
+        output = None
+        time_begin = time.time()
+        if settings["stream"]:
+            output = self.streamGenerate(settings)
+        output = self.simpleGenerate(settings)
+        time_end = time.time()
+
+        print(f"⏱️ Time taken for inference: {time_end - time_begin} seconds")
+
+        return output
+
+    def simpleGenerate(self, prompt):
+        generator = ExLlamaV2BaseGenerator(self.model, self.cache, self.tokenizer)
+        generator.warmup()
+        output = generator.generate_simple(
+            prompt,
             gen_settings=self.settings,
-            num_tokens=settings["max_new_tokens"],
+            num_tokens=self.settings["max_new_tokens"],
             seed=1234,
         )
         return output
+
+    def streamGenerate(self, prompt):
+        input_ids = self.tokenizer.encode(prompt)
+        generator = ExLlamaV2StreamingGenerator(self.model, self.cache, self.tokenizer)
+        generator.warmup()
+
+        generator.set_stop_conditions([])
+        generator.begin_stream(input_ids, self.settings)
+        generated_tokens = 0
+
+        while True:
+            chunk, eos, _ = generator.stream()
+            generated_tokens += 1
+            yield chunk
+
+            if eos or generated_tokens == self.settings["max_new_tokens"]:
+                break
