@@ -22,7 +22,7 @@ ENV MODEL_BASE_PATH=$MODEL_BASE_PATH
 
 # Install Python dependencies (Worker Template)
 RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install --upgrade -r /requirements.txt --no-cache-dir && \
+    python3 -m pip install --upgrade -r requirements.txt --no-cache-dir
 
 # Add src files (Worker Template)
 ADD src .
