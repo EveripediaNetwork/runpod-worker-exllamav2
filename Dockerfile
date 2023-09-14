@@ -18,6 +18,7 @@ ARG MODEL_REVISION="main"
 ENV MODEL_REVISION=$MODEL_REVISION
 ARG MODEL_BASE_PATH="/runpod-volume/"
 ENV MODEL_BASE_PATH=$MODEL_BASE_PATH
+ENV HF_HOME = $MODEL_BASE_PATH
 
 # Install Python dependencies (Worker Template)
 COPY builder/requirements.txt /requirements.txt
@@ -28,4 +29,4 @@ RUN python3 -m pip install --upgrade pip && \
 # Add src files (Worker Template)
 ADD src .
 
-CMD HF_HOME=MODEL_BASE_PATH python3 -u /handler.py
+CMD python3 -u /handler.py
