@@ -7,6 +7,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Set the working directory
 WORKDIR /
 
+
 # Prepare the models inside the docker image
 ARG HUGGING_FACE_HUB_TOKEN=
 ENV HUGGING_FACE_HUB_TOKEN=$HUGGING_FACE_HUB_TOKEN
@@ -19,12 +20,13 @@ ENV MODEL_REVISION=$MODEL_REVISION
 ARG MODEL_BASE_PATH="/runpod-volume/"
 ENV MODEL_BASE_PATH=$MODEL_BASE_PATH
 
-
 # Install Python dependencies (Worker Template)
+COPY builder/requirements.txt /requirements.txt
 RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install --upgrade -r requirements.txt --no-cache-dir
+    python3 -m pip install --upgrade -r /requirements.txt --no-cache-dir && \
+    rm /requirements.txt
 
 # Add src files (Worker Template)
 ADD src .
 
-ENTRYPOINT ["./entrypoint.sh"]
+CMD ["bin/bash", "entrypoint.sh"]
