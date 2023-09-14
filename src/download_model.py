@@ -17,11 +17,14 @@ def download_model():
 
     DOWNLOAD_PATH = f"{MODEL_BASE_PATH}{MODEL_NAME.split('/')[1]}"
 
-    print(f"Downloading model to {DOWNLOAD_PATH}")
+    print(f"Downloading model to: {DOWNLOAD_PATH}")
 
-    snapshot_download(
-        MODEL_NAME,
+    downloaded_path = snapshot_download(
+        repo_id=MODEL_NAME,
         revision=MODEL_REVISION,
         local_dir=DOWNLOAD_PATH,
+        local_dir_use_symlinks=False,
         **download_kwargs,
     )
+
+    print(f"Finished downloading to: {downloaded_path}")
