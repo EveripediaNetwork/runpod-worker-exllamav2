@@ -53,8 +53,9 @@ class Predictor:
         output = None
         time_begin = time.time()
         if settings["stream"]:
-            output = self.streamGenerate(settings)
-        output = self.simpleGenerate(settings)
+            output = self.streamGenerate(settings["prompt"])
+            yield output
+        output = self.simpleGenerate(settings["prompt"])
         time_end = time.time()
 
         print(f"⏱️ Time taken for inference: {time_end - time_begin} seconds")
