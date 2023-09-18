@@ -21,14 +21,18 @@ def run(job) -> Union[str, Generator[str, None, None]]:
     prediction: Union[str, Generator[str, None, None]] = MODEL.predict(
         settings=validated_input
     )
-    if validated_input["stream"]:
-        for chunk in prediction:
-            yield chunk
-    else:
-        job_output = {
-            "result": {"prompt": validated_input["prompt"], "completion": prediction}
-        }
-        return job_output
+
+    for chunk in prediction:
+        if validated_input["stream"]:
+            print(chunk, end="")
+            output = chunk
+        else:
+            job_output = {
+                "result": {"prompt": validated_input["prompt"], "completion": chunk}
+            }
+            print(job_output, end="")
+            output = job_output
+        yield output
 
 
 runpod.serverless.start({"handler": run})

@@ -53,29 +53,30 @@ class Predictor:
         output = None
         time_begin = time.time()
         if settings["stream"]:
-            output = self.streamGenerate(settings["prompt"])
-            yield output
+            output = self.streamGenerate(settings["prompt"], settings["max_new_tokens"])
+            for chunk in output:
+                yield chunk
         else:
-            output = self.simpleGenerate(settings["prompt"])
+            output = self.simpleGenerate(settings["prompt"], settings["max_new_tokens"])
 
         time_end = time.time()
         print(f"⏱️ Time taken for inference: {time_end - time_begin} seconds")
 
         if not settings["stream"]:
-            return output
+            yield output
 
-    def simpleGenerate(self, prompt):
+    def simpleGenerate(self, prompt, max_new_tokens):
         generator = ExLlamaV2BaseGenerator(self.model, self.cache, self.tokenizer)
         generator.warmup()
         output = generator.generate_simple(
             prompt,
             gen_settings=self.settings,
-            num_tokens=self.settings["max_new_tokens"],
+            num_tokens=max_new_tokens,
             seed=1234,
         )
-        yield output
+        return output
 
-    def streamGenerate(self, prompt):
+    def streamGenerate(self, prompt, max_new_tokens):
         input_ids = self.tokenizer.encode(prompt)
         generator = ExLlamaV2StreamingGenerator(self.model, self.cache, self.tokenizer)
         generator.warmup()
@@ -89,5 +90,5 @@ class Predictor:
             generated_tokens += 1
             yield chunk
 
-            if eos or generated_tokens == self.settings["max_new_tokens"]:
+            if eos or generated_tokens == max_new_tokens:
                 break
