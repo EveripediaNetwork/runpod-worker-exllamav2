@@ -35,4 +35,4 @@ def run(job) -> Union[str, Generator[str, None, None]]:
         yield output
 
 
-runpod.serverless.start({"handler": run})
+runpod.serverless.start({"handler": run, "return_aggregate_stream": True})
