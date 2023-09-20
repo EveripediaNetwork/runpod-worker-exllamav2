@@ -53,29 +53,11 @@ class Predictor:
 
         output = None
         time_begin = time.time()
-        if settings["stream"]:
-            output = self.streamGenerate(settings["prompt"], settings["max_new_tokens"])
-            for chunk in output:
-                yield chunk
-        else:
-            output = self.simpleGenerate(settings["prompt"], settings["max_new_tokens"])
-
+        output = self.streamGenerate(settings["prompt"], settings["max_new_tokens"])
+        for chunk in output:
+            yield chunk
         time_end = time.time()
         print(f"⏱️ Time taken for inference: {time_end - time_begin} seconds")
-
-        if not settings["stream"]:
-            yield output
-
-    def simpleGenerate(self, prompt, max_new_tokens):
-        generator = ExLlamaV2BaseGenerator(self.model, self.cache, self.tokenizer)
-        generator.warmup()
-        output = generator.generate_simple(
-            prompt,
-            gen_settings=self.settings,
-            num_tokens=max_new_tokens,
-            seed=1234,
-        )
-        return output
 
     def streamGenerate(self, prompt, max_new_tokens):
         input_ids = self.tokenizer.encode(prompt)

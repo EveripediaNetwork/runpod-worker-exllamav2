@@ -18,20 +18,13 @@ def run(job) -> Union[str, Generator[str, None, None]]:
     validated_input = validated_input["validated_input"]
 
     ### Run the model depending on stream
-    prediction: Union[str, Generator[str, None, None]] = MODEL.predict(
+    prediction = MODEL.predict(
         settings=validated_input
     )
 
     for chunk in prediction:
-        if validated_input["stream"]:
-            print(chunk, end="")
-            output = chunk
-        else:
-            job_output = {
-                "result": {"prompt": validated_input["prompt"], "completion": chunk}
-            }
-            print(job_output, end="")
-            output = job_output
+        print(chunk, end="")
+        output = chunk
         yield output
 
 
