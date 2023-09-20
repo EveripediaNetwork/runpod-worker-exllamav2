@@ -73,5 +73,5 @@ class Predictor:
             generated_tokens += 1
             yield chunk
 
-            if eos or generated_tokens == max_new_tokens:
+            if eos or generated_tokens == max_new_tokens or chunk == "</s>":
                 break
