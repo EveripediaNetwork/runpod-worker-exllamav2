@@ -40,7 +40,7 @@ class Predictor:
         self.model.load()
         self.cache = ExLlamaV2Cache(self.model)
         self.settings = ExLlamaV2Sampler.Settings()
-        # self.settings.disallow_tokens(self.tokenizer, [self.tokenizer.eos_token_id])
+        self.settings.disallow_tokens(self.tokenizer, [self.tokenizer.eos_token_id])
 
     def predict(self, settings):
         ### Set the generation settings
@@ -64,7 +64,6 @@ class Predictor:
         generator = ExLlamaV2StreamingGenerator(self.model, self.cache, self.tokenizer)
         generator.warmup()
 
-        generator.set_stop_conditions([])
         generator.begin_stream(input_ids, self.settings)
         generated_tokens = 0
 
