@@ -93,6 +93,7 @@ def handler(event):
             output = output[len(text1):]
 
             print(output, end="")
+            print(i)
             output_list.append(output)  # append the generated output to the list
 
             # sys.stdout.flush()
