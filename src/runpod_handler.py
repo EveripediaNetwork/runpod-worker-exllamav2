@@ -53,7 +53,7 @@ model, tokenizer = model_init.init(args)
 def handler(event):
     prompt = event["input"]["prompt"]
     max_tokens = event["input"].get("max_tokens", 128)
-    stop_tokens = event["input"].get("stop_token", ["</s>", tokenizer.decode(tokenizer.eos_token_id)])
+    stop_tokens = event["input"].get("stop_token", ["</s>"])
     with torch.inference_mode():
 
         cache = ExLlamaV2Cache(model)
@@ -85,7 +85,7 @@ def handler(event):
             logits = model.forward(ids[:, -1:], cache)
             sample = torch.argmax(logits[0, -1]).cpu().unsqueeze(0).unsqueeze(0)
             ids = torch.cat((ids, sample), dim=-1)
-
+            print("Sample is: ", sample)
             if tokenizer.decode(sample[0][0]) in stop_tokens:
                 break
 
