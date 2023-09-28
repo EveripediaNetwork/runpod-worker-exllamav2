@@ -30,6 +30,6 @@ jobs:
           platforms: linux/amd64
           context: .
           file: ./Dockerfile
-          tags: ghcr.io/vendi-ai/runpod-serverless-exllama/worker:latest
+          tags: ghcr.io/vendi-ai/runpod-serverless-exllama/worker:dev-matan
           build-args: |
             HUGGING_FACE_HUB_TOKEN=${{ secrets.HUGGING_FACE_HUB_TOKEN }}
