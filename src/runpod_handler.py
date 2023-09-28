@@ -53,6 +53,7 @@ model, tokenizer = model_init.init(args)
 def handler(event):
     prompt = event["input"]["prompt"]
     max_tokens = event["input"].get("max_tokens", 128)
+    stop_tokens = event["input"].get("stop_token", ["</s>", tokenizer.decode(tokenizer.eos_token_id)])
     with torch.inference_mode():
 
         cache = ExLlamaV2Cache(model)
@@ -71,11 +72,13 @@ def handler(event):
 
         time_begin = time.time()
 
-        if ids.shape[-1] > 1: model.forward(ids[:, :-1], cache, preprocess_only=True)
+        if ids.shape[-1] > 1:
+            model.forward(ids[:, :-1], cache, preprocess_only=True)
 
         torch.cuda.synchronize()
         time_prompt = time.time()
 
+        output_list = []
         for i in range(max_tokens):
             text1 = tokenizer.decode(ids[:, -2:])[0]
 
@@ -83,10 +86,15 @@ def handler(event):
             sample = torch.argmax(logits[0, -1]).cpu().unsqueeze(0).unsqueeze(0)
             ids = torch.cat((ids, sample), dim=-1)
 
+            if tokenizer.decode(sample[0][0]) in stop_tokens:
+                break
+
             output = tokenizer.decode(ids[:, -3:])[0]
             output = output[len(text1):]
 
             print(output, end="")
+            output_list.append(output)  # append the generated output to the list
+
             # sys.stdout.flush()
 
         time_end = time.time()
@@ -100,8 +108,8 @@ def handler(event):
         f"Prompt processed in {total_prompt:.2f} seconds, {tokens_prompt} tokens, {tokens_prompt / total_prompt:.2f} tokens/second")
     print(
         f"Response generated in {total_gen:.2f} seconds, {max_tokens} tokens, {max_tokens / total_gen:.2f} tokens/second")
-
-    return output
+    complete_output = "".join(output_list)
+    return complete_output
 
 
 runpod.serverless.start({"handler": handler})
