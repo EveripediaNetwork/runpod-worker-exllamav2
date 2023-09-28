@@ -52,6 +52,7 @@ model, tokenizer = model_init.init(args)
 
 def handler(event):
     prompt = event["input"]["prompt"]
+    max_tokens = event["input"].get("max_tokens", 128)
     with torch.inference_mode():
 
         cache = ExLlamaV2Cache(model)
@@ -65,7 +66,7 @@ def handler(event):
 
         print(f" -- Generating (greedy sampling)...")
         print()
-        print(args.prompt, end="")
+        print(prompt, end="")
         sys.stdout.flush()
 
         time_begin = time.time()
@@ -75,7 +76,7 @@ def handler(event):
         torch.cuda.synchronize()
         time_prompt = time.time()
 
-        for i in range(args.tokens):
+        for i in range(max_tokens):
             text1 = tokenizer.decode(ids[:, -2:])[0]
 
             logits = model.forward(ids[:, -1:], cache)
@@ -98,7 +99,7 @@ def handler(event):
     print(
         f"Prompt processed in {total_prompt:.2f} seconds, {tokens_prompt} tokens, {tokens_prompt / total_prompt:.2f} tokens/second")
     print(
-        f"Response generated in {total_gen:.2f} seconds, {args.tokens} tokens, {args.tokens / total_gen:.2f} tokens/second")
+        f"Response generated in {total_gen:.2f} seconds, {max_tokens} tokens, {max_tokens / total_gen:.2f} tokens/second")
 
 
 runpod.serverless.start({"handler": handler})
