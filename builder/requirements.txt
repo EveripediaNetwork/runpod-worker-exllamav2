@@ -2,11 +2,5 @@
 # Reccomended to lock the version number to avoid unexpected changes.
 
 runpod==1.2.0
-exllamav2==0.0.2
-pandas
-ninja
-fastparquet
-torch>=2.0.1
-safetensors>=0.3.2
 sentencepiece>=0.1.97
 huggingface-hub==0.16.4

@@ -20,6 +20,9 @@ ENV MODEL_REVISION=$MODEL_REVISION
 ARG MODEL_BASE_PATH="/runpod-volume/"
 ENV MODEL_BASE_PATH=$MODEL_BASE_PATH
 
+COPY ./exllamav2 ./exllamav2
+
+RUN cd exllamav2 && python setup.pu install -user
 # Install Python dependencies (Worker Template)
 COPY builder/requirements.txt /requirements.txt
 RUN python3 -m pip install --upgrade pip && \
