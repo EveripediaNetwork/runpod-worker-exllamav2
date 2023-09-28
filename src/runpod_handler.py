@@ -83,10 +83,10 @@ def handler(event):
             sample = torch.argmax(logits[0, -1]).cpu().unsqueeze(0).unsqueeze(0)
             ids = torch.cat((ids, sample), dim=-1)
 
-            text2 = tokenizer.decode(ids[:, -3:])[0]
-            text2 = text2[len(text1):]
+            output = tokenizer.decode(ids[:, -3:])[0]
+            output = output[len(text1):]
 
-            print(text2, end="")
+            print(output, end="")
             # sys.stdout.flush()
 
         time_end = time.time()
@@ -100,6 +100,8 @@ def handler(event):
         f"Prompt processed in {total_prompt:.2f} seconds, {tokens_prompt} tokens, {tokens_prompt / total_prompt:.2f} tokens/second")
     print(
         f"Response generated in {total_gen:.2f} seconds, {max_tokens} tokens, {max_tokens / total_gen:.2f} tokens/second")
+
+    return output
 
 
 runpod.serverless.start({"handler": handler})
