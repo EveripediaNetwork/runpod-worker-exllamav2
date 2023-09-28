@@ -2,10 +2,6 @@ name: exllama-docker
 
 on:
   workflow_dispatch:
-    inputs:
-      branchName:
-        description: 'Branch Name' # Description of the input
-        required: true # This input needs to be provided when triggering the workflow
   release:
     types: [ published ] # Run this workflow when a release is published
 
