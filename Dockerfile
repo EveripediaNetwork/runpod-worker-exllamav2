@@ -38,4 +38,4 @@ COPY ./src/* /data/
 
 ENV PYTHONPATH=/data/exllamav2
 
-CMD [ "python", "-m", "handler" ]
+CMD [ "python", "-m", "runpod_handler"]
