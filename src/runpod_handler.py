@@ -45,7 +45,7 @@ args = parser.parse_args()
 args.model_dir = model_directory
 model_init.print_options(args)
 model, tokenizer = model_init.init(args)
-
+print(tokenizer.eos_token_id)
 
 # Test generation
 
@@ -53,7 +53,7 @@ model, tokenizer = model_init.init(args)
 def handler(event):
     prompt = event["input"]["prompt"]
     max_tokens = event["input"].get("max_tokens", 128)
-    stop_tokens = event["input"].get("stop_token", ["</s>"])
+    stop_tokens = event["input"].get("stop_token", [tokenizer.eos_token_id])
     with torch.inference_mode():
 
         cache = ExLlamaV2Cache(model)
@@ -85,15 +85,13 @@ def handler(event):
             logits = model.forward(ids[:, -1:], cache)
             sample = torch.argmax(logits[0, -1]).cpu().unsqueeze(0).unsqueeze(0)
             ids = torch.cat((ids, sample), dim=-1)
-            print("Sample is: ", sample)
-            if tokenizer.decode(sample[0][0]) in stop_tokens:
+            if sample[0][0] in stop_tokens:
                 break
 
             output = tokenizer.decode(ids[:, -3:])[0]
             output = output[len(text1):]
 
             print(output, end="")
-            print(i)
             output_list.append(output)  # append the generated output to the list
 
             # sys.stdout.flush()
@@ -101,8 +99,6 @@ def handler(event):
         time_end = time.time()
 
     print()
-    print()
-
     total_prompt = time_prompt - time_begin
     total_gen = time_end - time_prompt
     print(
@@ -110,6 +106,8 @@ def handler(event):
     print(
         f"Response generated in {total_gen:.2f} seconds, {max_tokens} tokens, {max_tokens / total_gen:.2f} tokens/second")
     complete_output = "".join(output_list)
+    print()
+    print(complete_output)
     return complete_output
 
 
