@@ -10,7 +10,7 @@ This is worker code which uses ExllamaV2 for inference on Runpod Serverless.
 
 ### 🏗️ build docker image
 ```bash
-docker build -t <your docker registry>/<your docker image name>:<your docker image tag> . --build-arg HUGGING_FACE_HUB_TOKEN=<your huggingface token> --build-arg MODEL_NAME=<your model name> --build-arg MODEL_REVISION=<your model revision> --build-arg MODEL_BASE_PATH=<your model base path>
+docker build -t <your docker registry>/<your docker image name>:<your docker image tag> .
 ```
 
 These are the build arguments:
