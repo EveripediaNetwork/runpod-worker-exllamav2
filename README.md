@@ -21,6 +21,8 @@ These are the build arguments:
 | MODEL_NAME | your model name | false |
 | MODEL_REVISION | your model revision | true |
 | MODEL_BASE_PATH | your model base path | true |
+| LORA_ADAPTER_NAME | your lora adapter name | true |
+| LORA_ADAPTER_REVISION | your lora adapter revision | true |
 
 ### ⏫ push docker image to your docker registry
 ```bash

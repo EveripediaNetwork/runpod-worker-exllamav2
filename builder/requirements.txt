@@ -2,7 +2,7 @@
 # Reccomended to lock the version number to avoid unexpected changes.
 
 runpod==1.2.0
-exllamav2==0.0.2
+exllamav2==0.0.6
 pandas
 ninja
 fastparquet
