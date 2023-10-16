@@ -15,6 +15,8 @@ docker build -t <your docker registry>/<your docker image name>:<your docker ima
 
 These are the build arguments:
 
+Note: The model gets downloaded on first run so these models get downloaded on runtime instead of on build. Make sure you are attaching network volume to serverless endpoint so download only happens once and the cache is used for subsequent runs
+
 | key | value | optional |
 | --- | --- | --- |
 | HUGGING_FACE_HUB_TOKEN | your huggingface token | true |
